@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎌 AnimeSwipe
 
-## Getting Started
+Aplicación Next.js para descubrir anime con sistema de swipe tipo Tinder.
 
-First, run the development server:
+## 🚀 Inicio rápido
 
 ```bash
+# Instalar dependencias
+npm install
+
+# Levantar servidor de desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Tecnologías
 
-## Learn More
+- **Framework**: Next.js 15.5 (App Router + Turbopack)
+- **Lenguaje**: TypeScript 5
+- **Estilos**: Tailwind CSS v4
+- **Iconos**: Lucide React
+- **Linting**: ESLint 9 (Flat Config)
+- **Formateo**: Prettier 3
+- **Runtime**: Node.js >= 20
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Comandos disponibles
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Desarrollo
 
-## Deploy on Vercel
+```bash
+npm run dev          # Servidor de desarrollo con Turbopack
+npm run dev:clean    # Limpiar cache + iniciar dev server
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Build y Preview
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run build        # Build de producción
+npm run start        # Servidor de producción
+npm run preview      # Build + Start
+```
+
+### Calidad de código
+
+```bash
+npm run type-check   # Verificar tipos TypeScript
+npm run lint         # Ejecutar ESLint
+npm run lint:fix     # Arreglar problemas automáticamente
+
+npm run format       # Formatear código con Prettier
+npm run format:check # Verificar formato
+
+npm run code:check   # Ejecutar: type-check + lint + format:check
+npm run code:fix     # Ejecutar: lint:fix + format
+```
+
+### Utilidades
+
+```bash
+npm run clean        # Limpiar .next y cache
+npm run clean:all    # Limpiar .next y node_modules
+```
+
+---
+
+## 📁 Estructura del proyecto
+
+```
+anime-swipe/
+├── src/
+│   ├── app/              # App Router (páginas, layouts)
+│   ├── types/            # Tipos TypeScript
+│   └── utils/            # Utilidades y constantes
+├── public/               # Assets estáticos
+├── eslint.config.js      # Configuración ESLint
+├── prettier.config.js    # Configuración Prettier
+├── postcss.config.mjs    # Configuración PostCSS
+├── tsconfig.json         # Configuración TypeScript
+└── next.config.ts        # Configuración Next.js
+```
+
+---
+
+## 🎨 Estilo de código
+
+Este proyecto usa:
+
+- **ESLint** - Reglas de código y mejores prácticas
+- **Prettier** - Formato consistente
+- **TypeScript** - Modo estricto habilitado
+
+### Antes de hacer commit
+
+```bash
+npm run code:check
+```
+
+### Arreglar problemas automáticamente
+
+```bash
+npm run code:fix
+```
+
+---
+
+## 📝 Convenciones
+
+- Usa **npm** como gestor de paquetes (no pnpm/yarn)
+- Los imports se ordenan automáticamente
+- Los imports de tipos usan `import type { ... }`
+- Turbopack habilitado para builds rápidos
+- Node.js >= 20 requerido
+
+---
+
+## 🔗 Deploy
+
+La forma más fácil de deployar es usando [Vercel](https://vercel.com):
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+
+---
+
+## 📄 Licencia
+
+MIT
