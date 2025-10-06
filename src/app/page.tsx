@@ -2,92 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { Heart, X, RotateCcw } from 'lucide-react';
+import { Anime } from '@/types/anime';
+import { fakeAnimeData } from '@/utils/constants';
+import Image from 'next/image';
 
 export default function AnimeSwipeApp() {
-  const [animeList, setAnimeList] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [swipeDirection, setSwipeDirection] = useState(null);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
-  const [likedAnime, setLikedAnime] = useState([]);
-  const [dislikedAnime, setDislikedAnime] = useState([]);
-
-  // Fake anime data for testing
-  const fakeAnimeData = [
-    {
-      mal_id: 1,
-      title: "Dragon Chronicles",
-      images: { jpg: { large_image_url: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&h=700&fit=crop" }},
-      score: 8.5,
-      type: "TV",
-      episodes: 24,
-      synopsis: "A young warrior discovers their hidden power to control dragons and must save their kingdom from an ancient evil that threatens to destroy everything they hold dear."
-    },
-    {
-      mal_id: 2,
-      title: "Cyber City 2099",
-      images: { jpg: { large_image_url: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500&h=700&fit=crop" }},
-      score: 9.1,
-      type: "TV",
-      episodes: 12,
-      synopsis: "In a neon-lit future metropolis, a hacker uncovers a conspiracy that could change the fate of humanity forever. Action-packed cyberpunk thriller with stunning visuals."
-    },
-    {
-      mal_id: 3,
-      title: "Magical Academy",
-      images: { jpg: { large_image_url: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=500&h=700&fit=crop" }},
-      score: 7.8,
-      type: "TV",
-      episodes: 36,
-      synopsis: "Students at an elite magic school compete in tournaments while uncovering dark secrets about their institution's past. Friendship, rivalry, and supernatural powers collide."
-    },
-    {
-      mal_id: 4,
-      title: "Samurai Legends",
-      images: { jpg: { large_image_url: "https://images.unsplash.com/photo-1528409343470-c9a804e0b6e1?w=500&h=700&fit=crop" }},
-      score: 8.9,
-      type: "Movie",
-      episodes: 1,
-      synopsis: "A masterless samurai roams feudal Japan seeking redemption for past sins. Breathtaking sword fights and emotional storytelling create an unforgettable tale of honor."
-    },
-    {
-      mal_id: 5,
-      title: "Space Explorers",
-      images: { jpg: { large_image_url: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=500&h=700&fit=crop" }},
-      score: 8.2,
-      type: "TV",
-      episodes: 48,
-      synopsis: "A ragtag crew of space travelers embarks on a journey across the galaxy, encountering alien civilizations and facing cosmic mysteries that challenge their understanding of reality."
-    },
-    {
-      mal_id: 6,
-      title: "Demon Slayer Academy",
-      images: { jpg: { large_image_url: "https://images.unsplash.com/photo-1509023464722-18d996393ca8?w=500&h=700&fit=crop" }},
-      score: 8.7,
-      type: "TV",
-      episodes: 24,
-      synopsis: "Young demon hunters train to protect humanity from supernatural threats. Dark fantasy with intense battles and deep character development."
-    },
-    {
-      mal_id: 7,
-      title: "Cooking Masters",
-      images: { jpg: { large_image_url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&h=700&fit=crop" }},
-      score: 7.5,
-      type: "TV",
-      episodes: 12,
-      synopsis: "Aspiring chefs compete in high-stakes culinary battles where dishes can literally change the world. A delicious blend of comedy, drama, and mouth-watering food."
-    },
-    {
-      mal_id: 8,
-      title: "Time Loop Paradox",
-      images: { jpg: { large_image_url: "https://images.unsplash.com/photo-1501139083538-0139583c060f?w=500&h=700&fit=crop" }},
-      score: 9.3,
-      type: "TV",
-      episodes: 13,
-      synopsis: "A high school student finds themselves trapped in a time loop, reliving the same day. They must solve the mystery while preventing a catastrophic future."
-    }
-  ];
+  const [animeList, setAnimeList] = useState<Anime[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [likedAnime, setLikedAnime] = useState<Anime[]>([]);
+  const [dislikedAnime, setDislikedAnime] = useState<Anime[]>([]);
 
   // Fetch anime from Jikan API (MyAnimeList API)
   useEffect(() => {
@@ -99,7 +26,7 @@ export default function AnimeSwipeApp() {
     // fetchAnime();
   }, []);
 
-  const fetchAnime = async () => {
+  /*const fetchAnime = async () => {
     try {
       setLoading(true);
       // Fetching popular anime - you can change this endpoint
@@ -111,11 +38,11 @@ export default function AnimeSwipeApp() {
       console.error('Error fetching anime:', error);
       setLoading(false);
     }
-  };
+  };*/
 
   const currentAnime = animeList[currentIndex];
 
-  const handleSwipe = (direction) => {
+  const handleSwipe = (direction: 'left' | 'right') => {
     if (!currentAnime) return;
     
     setSwipeDirection(direction);
@@ -132,12 +59,12 @@ export default function AnimeSwipeApp() {
     }, 300);
   };
 
-  const handleTouchStart = (e) => {
+  const handleTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
 
-  const handleTouchMove = (e) => {
+  const handleTouchMove = (e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
@@ -175,8 +102,8 @@ export default function AnimeSwipeApp() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-800 to-red-900 flex flex-col items-center justify-center p-6">
         <div className="text-white text-center">
-          <h2 className="text-3xl font-bold mb-4">That's all for now!</h2>
-          <p className="text-lg mb-6">You've reviewed {animeList.length} anime shows</p>
+          <h2 className="text-3xl font-bold mb-4">That&apos;s all for now!</h2>
+          <p className="text-lg mb-6">You&apos;ve reviewed {animeList.length} anime shows</p>
           <div className="bg-white/10 backdrop-blur rounded-lg p-6 mb-6">
             <p className="text-2xl mb-2">❤️ Liked: {likedAnime.length}</p>
             <p className="text-2xl">👎 Passed: {dislikedAnime.length}</p>
@@ -219,11 +146,11 @@ export default function AnimeSwipeApp() {
         >
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
             <div className="relative h-96">
-              <img
-                src={currentAnime.images.jpg.large_image_url}
+              <Image src={currentAnime.images.jpg.large_image_url}
                 alt={currentAnime.title}
                 className="w-full h-full object-cover"
-              />
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                 <h2 className="text-2xl font-bold mb-2">{currentAnime.title}</h2>
