@@ -27,13 +27,14 @@ npm run format       # Formatear código
 
 ```
 src/
-├── app/           # Páginas y layouts
-├── lib/           # Supabase clients
-├── types/         # TypeScript types
-└── utils/         # Utilidades
+├── app/              # Páginas y layouts
+├── types/            # TypeScript types
+├── utils/
+│   ├── supabase/     # Supabase clients (client, server, middleware)
+│   └── constants.ts  # Constantes
 
 supabase/
-└── schema.sql     # Database schema
+└── schema.sql        # Database schema
 ```
 
 ## Setup Supabase
@@ -43,9 +44,11 @@ supabase/
 3. Crear `.env.local`:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-publishable-key
 ```
+
+Ver **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** para ejemplos de uso.
 
 ## Licencia
 
