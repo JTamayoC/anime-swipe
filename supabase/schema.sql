@@ -327,8 +327,8 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- Function to update anime score based on user reviews
-CREATE OR REPLACE FUNCTION public.update_anime_score()
+-- Function to update anime score based on user reviews (INSERT/UPDATE)
+CREATE OR REPLACE FUNCTION public.update_anime_score_insert_update()
 RETURNS TRIGGER AS $$
 BEGIN
   UPDATE public.anime
@@ -340,15 +340,28 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger to update anime score when review is added/updated/deleted
+-- Function to update anime score based on user reviews (DELETE)
+CREATE OR REPLACE FUNCTION public.update_anime_score_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE public.anime
+  SET 
+    score = (SELECT AVG(rating) FROM public.user_reviews WHERE anime_id = OLD.anime_id),
+    scored_by = (SELECT COUNT(*) FROM public.user_reviews WHERE anime_id = OLD.anime_id)
+  WHERE id = OLD.anime_id;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Triggers to update anime score when review is added/updated/deleted
 CREATE TRIGGER update_anime_score_on_review_insert
   AFTER INSERT ON public.user_reviews
-  FOR EACH ROW EXECUTE FUNCTION public.update_anime_score();
+  FOR EACH ROW EXECUTE FUNCTION public.update_anime_score_insert_update();
 
 CREATE TRIGGER update_anime_score_on_review_update
   AFTER UPDATE ON public.user_reviews
-  FOR EACH ROW EXECUTE FUNCTION public.update_anime_score();
+  FOR EACH ROW EXECUTE FUNCTION public.update_anime_score_insert_update();
 
 CREATE TRIGGER update_anime_score_on_review_delete
   AFTER DELETE ON public.user_reviews
-  FOR EACH ROW EXECUTE FUNCTION public.update_anime_score();
+  FOR EACH ROW EXECUTE FUNCTION public.update_anime_score_delete();
