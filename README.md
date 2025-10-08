@@ -1,131 +1,55 @@
 # 🎌 AnimeSwipe
 
-Aplicación Next.js para descubrir anime con sistema de swipe tipo Tinder.
+Descubre anime con swipe tipo Tinder.
 
-## 🚀 Inicio rápido
+## Stack
 
-```bash
-# Instalar dependencias
-npm install
+- Next.js 15 + React 19 + TypeScript 5
+- Tailwind CSS v4
+- Supabase (PostgreSQL + Auth)
+- ESLint 9 + Prettier 3
 
-# Levantar servidor de desarrollo
-npm run dev
-```
-
-Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
-
----
-
-## 📦 Tecnologías
-
-- **Framework**: Next.js 15.5 (App Router + Turbopack)
-- **Lenguaje**: TypeScript 5
-- **Estilos**: Tailwind CSS v4
-- **Iconos**: Lucide React
-- **Linting**: ESLint 9 (Flat Config)
-- **Formateo**: Prettier 3
-- **Runtime**: Node.js >= 20
-
----
-
-## 🛠️ Comandos disponibles
-
-### Desarrollo
+## Comandos
 
 ```bash
-npm run dev          # Servidor de desarrollo con Turbopack
-npm run dev:clean    # Limpiar cache + iniciar dev server
-```
+npm install          # Instalar dependencias
+npm run dev          # Servidor de desarrollo
 
-### Build y Preview
-
-```bash
 npm run build        # Build de producción
 npm run start        # Servidor de producción
-npm run preview      # Build + Start
+
+npm run type-check   # Verificar tipos
+npm run lint         # Linter
+npm run format       # Formatear código
 ```
 
-### Calidad de código
+## Estructura
+
+```
+src/
+├── app/              # Páginas y layouts
+├── types/            # TypeScript types
+├── utils/
+│   ├── supabase/     # Supabase clients (client, server, middleware)
+│   └── constants.ts  # Constantes
+
+supabase/
+└── schema.sql        # Database schema
+```
+
+## Setup Supabase
+
+1. Crear proyecto en [supabase.com](https://supabase.com)
+2. Ejecutar `supabase/schema.sql` en SQL Editor
+3. Crear `.env.local`:
 
 ```bash
-npm run type-check   # Verificar tipos TypeScript
-npm run lint         # Ejecutar ESLint
-npm run lint:fix     # Arreglar problemas automáticamente
-
-npm run format       # Formatear código con Prettier
-npm run format:check # Verificar formato
-
-npm run code:check   # Ejecutar: type-check + lint + format:check
-npm run code:fix     # Ejecutar: lint:fix + format
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-publishable-key
 ```
 
-### Utilidades
+Ver **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** para ejemplos de uso.
 
-```bash
-npm run clean        # Limpiar .next y cache
-npm run clean:all    # Limpiar .next y node_modules
-```
-
----
-
-## 📁 Estructura del proyecto
-
-```
-anime-swipe/
-├── src/
-│   ├── app/              # App Router (páginas, layouts)
-│   ├── types/            # Tipos TypeScript
-│   └── utils/            # Utilidades y constantes
-├── public/               # Assets estáticos
-├── eslint.config.js      # Configuración ESLint
-├── prettier.config.js    # Configuración Prettier
-├── postcss.config.mjs    # Configuración PostCSS
-├── tsconfig.json         # Configuración TypeScript
-└── next.config.ts        # Configuración Next.js
-```
-
----
-
-## 🎨 Estilo de código
-
-Este proyecto usa:
-
-- **ESLint** - Reglas de código y mejores prácticas
-- **Prettier** - Formato consistente
-- **TypeScript** - Modo estricto habilitado
-
-### Antes de hacer commit
-
-```bash
-npm run code:check
-```
-
-### Arreglar problemas automáticamente
-
-```bash
-npm run code:fix
-```
-
----
-
-## 📝 Convenciones
-
-- Usa **npm** como gestor de paquetes (no pnpm/yarn)
-- Los imports se ordenan automáticamente
-- Los imports de tipos usan `import type { ... }`
-- Turbopack habilitado para builds rápidos
-- Node.js >= 20 requerido
-
----
-
-## 🔗 Deploy
-
-La forma más fácil de deployar es usando [Vercel](https://vercel.com):
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
-
----
-
-## 📄 Licencia
+## Licencia
 
 MIT
