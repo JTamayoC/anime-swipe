@@ -1,4 +1,4 @@
-import type { AnimeWithCovers } from '@/types/anime';
+import type { AnimeWithCovers } from '../types/anime';
 
 /**
  * Default placeholder image for anime covers when no image is available
@@ -18,8 +18,11 @@ export const fakeAnimeData: AnimeWithCovers[] = [
     title: 'Dragon Chronicles',
     title_english: 'Dragon Chronicles',
     title_japanese: 'ドラゴン・クロニクルズ',
+    title_synonyms: ['Dragon War Chronicles', 'Chronicles of Dragons'],
     synopsis:
       'A young warrior discovers their hidden power to control dragons and must save their kingdom from an ancient evil that threatens to destroy everything they hold dear.',
+    background:
+      'This anime was adapted from a popular light novel series and became a fan favorite due to its intricate world-building and character development.',
     type: 'TV',
     status: 'Finished',
     episodes: 24,
@@ -32,11 +35,23 @@ export const fakeAnimeData: AnimeWithCovers[] = [
     scored_by: 15000,
     rank: 100,
     popularity: 500,
+    members: 45000,
+    favorites: 3500,
     rating: 'PG-13',
     source: 'Manga',
     studios: ['Studio Bones'],
     producers: ['Aniplex'],
-    trailer: null,
+    licensors: ['Funimation'],
+    broadcast: {
+      day: 'Saturday',
+      time: '23:00',
+      timezone: 'Asia/Tokyo',
+      string: 'Saturdays at 23:00 (JST)',
+    },
+    trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    mal_url: 'https://myanimelist.net/anime/1/Dragon_Chronicles',
+    approved: true,
+    airing: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     covers: [
@@ -59,8 +74,11 @@ export const fakeAnimeData: AnimeWithCovers[] = [
     title: 'Cyber City 2099',
     title_english: 'Cyber City 2099',
     title_japanese: 'サイバーシティ2099',
+    title_synonyms: ['Cyberpunk 2099', 'Neo Tokyo 2099'],
     synopsis:
       'In a neon-lit future metropolis, a hacker uncovers a conspiracy that could change the fate of humanity forever. Action-packed cyberpunk thriller with stunning visuals.',
+    background:
+      'A groundbreaking collaboration between Studio Trigger and MAPPA, featuring cutting-edge animation techniques and a star-studded voice cast.',
     type: 'TV',
     status: 'Airing',
     episodes: 12,
@@ -73,11 +91,23 @@ export const fakeAnimeData: AnimeWithCovers[] = [
     scored_by: 25000,
     rank: 20,
     popularity: 100,
+    members: 75000,
+    favorites: 8200,
     rating: 'R-17+',
     source: 'Original',
     studios: ['Trigger', 'MAPPA'],
     producers: ['Netflix'],
-    trailer: null,
+    licensors: ['Netflix'],
+    broadcast: {
+      day: 'Friday',
+      time: '00:00',
+      timezone: 'Asia/Tokyo',
+      string: 'Fridays at 00:00 (JST)',
+    },
+    trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    mal_url: 'https://myanimelist.net/anime/2/Cyber_City_2099',
+    approved: true,
+    airing: true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     covers: [
@@ -100,8 +130,11 @@ export const fakeAnimeData: AnimeWithCovers[] = [
     title: 'Magical Academy',
     title_english: 'Magical Academy',
     title_japanese: 'マジカル・アカデミー',
+    title_synonyms: ['Magic School Chronicles', 'Academy of Mystic Arts'],
     synopsis:
       "Students at an elite magic school compete in tournaments while uncovering dark secrets about their institution's past. Friendship, rivalry, and supernatural powers collide.",
+    background:
+      'Based on a bestselling light novel series with over 2 million copies sold. The anime adaptation received praise for its faithful adaptation and spectacular magic battle sequences.',
     type: 'TV',
     status: 'Finished',
     episodes: 36,
@@ -114,11 +147,23 @@ export const fakeAnimeData: AnimeWithCovers[] = [
     scored_by: 12000,
     rank: 300,
     popularity: 800,
+    members: 32000,
+    favorites: 1800,
     rating: 'PG-13',
     source: 'Light novel',
     studios: ['A-1 Pictures'],
     producers: ['Aniplex', 'Crunchyroll'],
-    trailer: null,
+    licensors: ['Crunchyroll'],
+    broadcast: {
+      day: 'Sunday',
+      time: '22:30',
+      timezone: 'Asia/Tokyo',
+      string: 'Sundays at 22:30 (JST)',
+    },
+    trailer: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    mal_url: 'https://myanimelist.net/anime/3/Magical_Academy',
+    approved: true,
+    airing: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     covers: [

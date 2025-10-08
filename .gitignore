@@ -11,7 +11,8 @@
 !.yarn/versions
 
 # environment variables
-.env*.local
+.env
+.env.*
 !.env.example
 
 # testing

@@ -13,24 +13,38 @@ export interface Anime {
   title: string;
   title_english: string | null;
   title_japanese: string | null;
+  title_synonyms: string[] | null; // Alternative titles
   synopsis: string | null;
+  background: string | null; // Additional anime information
   type: AnimeType;
   status: AnimeStatus;
   episodes: number | null;
-  duration: number | null;
-  aired_from: string | null;
-  aired_to: string | null;
+  duration: number | null; // duration in minutes
+  aired_from: string | null; // DATE format
+  aired_to: string | null; // DATE format
   season: AnimeSeason | null;
   year: number | null;
-  score: number | null;
+  score: number | null; // NUMERIC(3,2)
   scored_by: number;
   rank: number | null;
   popularity: number | null;
+  members: number | null; // MAL members count
+  favorites: number; // Favorites count (DEFAULT 0, so never null)
   rating: string | null;
   source: string | null;
-  studios: string[] | null;
-  producers: string[] | null;
-  trailer: string | null;
+  studios: string[] | null; // JSONB in database
+  producers: string[] | null; // JSONB in database
+  licensors: string[] | null; // JSONB in database
+  broadcast: {
+    day: string | null;
+    time: string | null;
+    timezone: string | null;
+    string: string | null;
+  } | null;
+  trailer: string | null; // YouTube URL
+  mal_url: string | null; // MyAnimeList URL
+  approved: boolean;
+  airing: boolean;
   created_at: string;
   updated_at: string;
 }

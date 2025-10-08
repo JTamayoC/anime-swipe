@@ -40,7 +40,9 @@ CREATE TABLE public.anime (
   title TEXT NOT NULL CHECK (char_length(title) > 0),
   title_english TEXT,
   title_japanese TEXT,
+  title_synonyms JSONB, -- Array of alternative titles
   synopsis TEXT,
+  background TEXT, -- Additional information about the anime
   type anime_type NOT NULL DEFAULT 'TV',
   status anime_status NOT NULL DEFAULT 'Finished',
   episodes INTEGER CHECK (episodes >= 0),
@@ -53,11 +55,18 @@ CREATE TABLE public.anime (
   scored_by INTEGER DEFAULT 0 CHECK (scored_by >= 0),
   rank INTEGER,
   popularity INTEGER,
+  members INTEGER CHECK (members >= 0), -- Number of MAL members who have this anime
+  favorites INTEGER DEFAULT 0 CHECK (favorites >= 0), -- Number of users who favorited this
   rating TEXT,
   source TEXT,
   studios JSONB,
   producers JSONB,
+  licensors JSONB, -- Separate from producers for clarity
+  broadcast JSONB, -- Broadcasting information (day, time, timezone)
   trailer TEXT,
+  mal_url TEXT, -- MyAnimeList URL
+  approved BOOLEAN DEFAULT true, -- Whether approved on MAL
+  airing BOOLEAN DEFAULT false, -- Currently airing status
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -162,6 +171,10 @@ CREATE INDEX idx_anime_status ON public.anime(status);
 CREATE INDEX idx_anime_year ON public.anime(year);
 CREATE INDEX idx_anime_season ON public.anime(season);
 CREATE INDEX idx_anime_score ON public.anime(score);
+CREATE INDEX idx_anime_members ON public.anime(members);
+CREATE INDEX idx_anime_favorites ON public.anime(favorites);
+CREATE INDEX idx_anime_airing ON public.anime(airing);
+CREATE INDEX idx_anime_approved ON public.anime(approved);
 
 CREATE INDEX idx_genres_name ON public.genres(name);
 CREATE INDEX idx_genres_slug ON public.genres(slug);
@@ -332,7 +345,7 @@ CREATE OR REPLACE FUNCTION public.update_anime_score_insert_update()
 RETURNS TRIGGER AS $$
 BEGIN
   UPDATE public.anime
-  SET 
+  SET
     score = (SELECT AVG(rating) FROM public.user_reviews WHERE anime_id = NEW.anime_id),
     scored_by = (SELECT COUNT(*) FROM public.user_reviews WHERE anime_id = NEW.anime_id)
   WHERE id = NEW.anime_id;
@@ -345,7 +358,7 @@ CREATE OR REPLACE FUNCTION public.update_anime_score_delete()
 RETURNS TRIGGER AS $$
 BEGIN
   UPDATE public.anime
-  SET 
+  SET
     score = (SELECT AVG(rating) FROM public.user_reviews WHERE anime_id = OLD.anime_id),
     scored_by = (SELECT COUNT(*) FROM public.user_reviews WHERE anime_id = OLD.anime_id)
   WHERE id = OLD.anime_id;

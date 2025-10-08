@@ -1,0 +1,26 @@
+{
+  "recommendations": [
+    // === ESENCIALES PARA ESTE PROYECTO ===
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-typescript-next",
+
+    // === SUPABASE & DATABASE ===
+    "supabase.supabase",
+    "ms-ossdata.vscode-pgsql",
+
+    // === NEXT.JS & REACT ===
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+    "wix.vscode-import-cost",
+
+    // === UTILIDADES DE DESARROLLO ===
+    "mikestead.dotenv",
+    "usernamehw.errorlens",
+    "ms-vscode.vscode-json",
+
+    // === TAILWIND CSS HELPERS ===
+    "heybourn.headwind"
+  ]
+}

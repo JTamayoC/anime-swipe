@@ -209,6 +209,19 @@ config.push({
 });
 
 // ============================================================================
+// JSON FILES
+// ============================================================================
+config.push({
+  files: ['*.json'],
+  languageOptions: {
+    parser: null, // Use default JSON parser
+  },
+  rules: {
+    // Disable all rules for JSON files - let Prettier handle formatting
+  },
+});
+
+// ============================================================================
 // PRETTIER
 // ============================================================================
 config.push(prettierConfig);
