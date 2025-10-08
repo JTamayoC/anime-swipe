@@ -1,8 +1,15 @@
 import type { AnimeWithCovers } from '@/types/anime';
 
 /**
- * Fake anime data for development (matching Supabase schema)
- * This will be replaced with real Supabase data
+ * Default placeholder image for anime covers when no image is available
+ */
+export const DEFAULT_PLACEHOLDER_IMAGE = '/placeholder.webp';
+
+/**
+ * Fake anime data for development (matching Supabase schema).
+ *
+ * @todo This temporary data will be replaced with real Supabase queries.
+ *       See implementation plan: https://github.com/JTamayoC/anime-swipe/issues/2
  */
 export const fakeAnimeData: AnimeWithCovers[] = [
   {

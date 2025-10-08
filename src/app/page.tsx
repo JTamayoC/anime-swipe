@@ -5,7 +5,7 @@ import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 
 import type { AnimeWithCovers } from '@/types/anime';
-import { fakeAnimeData } from '@/utils/constants';
+import { fakeAnimeData, DEFAULT_PLACEHOLDER_IMAGE } from '@/utils/constants';
 
 export default function AnimeSwipeApp() {
   const [animeList, setAnimeList] = useState<AnimeWithCovers[]>([]);
@@ -133,7 +133,7 @@ export default function AnimeSwipeApp() {
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
             <div className="relative h-96 w-full">
               <Image
-                src={primaryCover?.url || '/placeholder.jpg'}
+                src={primaryCover?.url || DEFAULT_PLACEHOLDER_IMAGE}
                 alt={currentAnime.title_english || currentAnime.title}
                 fill
                 className="object-cover z-0"
