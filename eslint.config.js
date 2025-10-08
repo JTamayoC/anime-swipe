@@ -50,28 +50,63 @@ config.push({
 });
 
 // ============================================================================
-// IMPORT PLUGIN
+// IMPORT PLUGIN - Enhanced rules for better code organization
 // ============================================================================
 config.push({
   plugins: { import: pluginImport },
   settings: {
-    'import/resolver': { node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] } },
+    'import/resolver': {
+      node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
+      typescript: { alwaysTryTypes: true },
+    },
   },
   rules: {
-    'import/no-unresolved': 'off',
+    // Core import rules
+    'import/no-unresolved': 'off', // TypeScript handles this
     'import/named': 'error',
     'import/default': 'error',
+    'import/namespace': 'error',
+    'import/export': 'error',
+
+    // Style rules
     'import/first': 'error',
     'import/no-duplicates': 'error',
+    'import/newline-after-import': 'warn',
+    'import/no-anonymous-default-export': 'warn',
+
+    // Helpful rules
+    'import/no-unused-modules': 'warn',
+    'import/no-cycle': 'error',
+    'import/no-self-import': 'error',
+    'import/no-useless-path-segments': 'warn',
+
+    // Import ordering - opinionated but helpful
     'import/order': [
       'warn',
       {
-        groups: ['builtin', 'external', 'internal', ['parent', 'sibling'], 'index', 'type'],
+        groups: [
+          'builtin', // Node built-ins
+          'external', // npm packages
+          'internal', // Internal imports
+          ['parent', 'sibling'], // Relative imports
+          'index', // Index files
+          'type', // Type-only imports
+        ],
         'newlines-between': 'always',
-        alphabetize: { order: 'asc', caseInsensitive: true },
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
+        pathGroups: [
+          {
+            pattern: '@/**',
+            group: 'internal',
+            position: 'before',
+          },
+        ],
+        pathGroupsExcludedImportTypes: ['builtin'],
       },
     ],
-    'import/newline-after-import': 'warn',
   },
 });
 
@@ -89,11 +124,31 @@ config.push({
   plugins: { 'react-hooks': pluginReactHooks },
   rules: {
     ...pluginReactHooks.configs.recommended.rules,
-    'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+
+    // Enhanced no-unused-vars for JavaScript
+    'no-unused-vars': [
+      'warn',
+      {
+        vars: 'all',
+        args: 'after-used',
+        ignoreRestSiblings: true,
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrors: 'all',
+        caughtErrorsIgnorePattern: '^_',
+      },
+    ],
+
+    // Code quality rules
     'prefer-const': 'warn',
     'no-var': 'error',
     'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'no-debugger': 'warn',
+    'no-alert': 'warn',
     eqeqeq: ['error', 'always', { null: 'ignore' }],
+
+    // Import related - handled by import plugin
+    'no-duplicate-imports': 'off', // import plugin handles this better
   },
 });
 
@@ -114,14 +169,30 @@ config.push({
   plugins: { '@typescript-eslint': typescriptPlugin, 'react-hooks': pluginReactHooks },
   rules: {
     ...pluginReactHooks.configs.recommended.rules,
+
+    // Disable base rule in favor of TypeScript version
     'no-unused-vars': 'off',
+
+    // Enhanced TypeScript unused vars
     '@typescript-eslint/no-unused-vars': [
       'warn',
-      { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      {
+        vars: 'all',
+        args: 'after-used',
+        ignoreRestSiblings: true,
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrors: 'all',
+        caughtErrorsIgnorePattern: '^_',
+      },
     ],
+
+    // TypeScript specific rules
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
+
+    // Import type consistency
     '@typescript-eslint/consistent-type-imports': [
       'warn',
       { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
