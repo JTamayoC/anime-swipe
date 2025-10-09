@@ -187,7 +187,9 @@ async function seedDatabase() {
           const genres = transformJikanGenres(anime);
           allGenresData.push(...genres);
         }
-        console.log(`📦 Página ${page} descargada: ${jikanAnime.length} animes (Total acumulado: ${allAnimeData.length})`);
+        console.log(
+          `📦 Página ${page} descargada: ${jikanAnime.length} animes (Total acumulado: ${allAnimeData.length})`
+        );
         hasNext = data.pagination?.has_next_page;
         page++;
         if (hasNext) {
