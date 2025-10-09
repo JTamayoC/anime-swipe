@@ -163,12 +163,17 @@ config.push({
       ecmaVersion: 'latest',
       sourceType: 'module',
       ecmaFeatures: { jsx: true },
+      project: './tsconfig.json',
     },
     globals: { ...globals.browser, ...globals.node, ...globals.es2021 },
   },
   plugins: { '@typescript-eslint': typescriptPlugin, 'react-hooks': pluginReactHooks },
   rules: {
     ...pluginReactHooks.configs.recommended.rules,
+
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'no-debugger': 'error',
+    'no-alert': 'error',
 
     // Disable base rule in favor of TypeScript version
     'no-unused-vars': 'off',
@@ -192,6 +197,15 @@ config.push({
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
 
+    // Additional useful TypeScript rules
+    '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/await-thenable': 'error',
+    '@typescript-eslint/no-misused-promises': 'error',
+    '@typescript-eslint/require-await': 'warn',
+    '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+    '@typescript-eslint/prefer-nullish-coalescing': 'warn',
+    '@typescript-eslint/prefer-optional-chain': 'warn',
+
     // Import type consistency
     '@typescript-eslint/consistent-type-imports': [
       'warn',
@@ -206,19 +220,6 @@ config.push({
 config.push({
   files: ['*.config.{js,mjs,ts}', 'eslint.config.ts', 'prettier.config.ts'],
   rules: { 'import/no-anonymous-default-export': 'off', 'no-console': 'off' },
-});
-
-// ============================================================================
-// JSON FILES
-// ============================================================================
-config.push({
-  files: ['*.json'],
-  languageOptions: {
-    parser: null, // Use default JSON parser
-  },
-  rules: {
-    // Disable all rules for JSON files - let Prettier handle formatting
-  },
 });
 
 // ============================================================================
