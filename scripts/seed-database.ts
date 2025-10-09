@@ -20,7 +20,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
 const supabasePublicKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
 
-const supabaseKey = supabaseSecretKey || supabasePublicKey;
+const supabaseKey = supabaseSecretKey ?? supabasePublicKey;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Missing Supabase environment variables');
@@ -34,35 +34,6 @@ if (!supabaseUrl || !supabaseKey) {
 
 console.log(`🔗 Connecting to Supabase using ${supabaseSecretKey ? 'secret' : 'public'} key...`);
 const supabase = createClient(supabaseUrl, supabaseKey);
-
-/**
- * Fetch anime data from Jikan API with rate limiting
- */
-// Fetch Jikan anime data with better error handling and rate limiting
-async function fetchJikanAnime(page: number = 1, limit = 25): Promise<JikanAnimeResponse[]> {
-  try {
-    console.log(`📡 Fetching Jikan page ${page}...`);
-
-    // Add delay to respect rate limits (1 request per second)
-    if (page > 1) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-
-    const response = await fetch(`https://api.jikan.moe/v4/anime?page=${page}&limit=${limit}`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: { data: JikanAnimeResponse[] } = await response.json();
-    console.log(`✅ Retrieved ${data.data.length} anime from page ${page}`);
-
-    return data.data;
-  } catch (error) {
-    console.error(`❌ Error fetching page ${page}:`, error);
-    return [];
-  }
-}
 
 /**
  * Insert genres and return a map of name -> id
@@ -179,8 +150,16 @@ async function seedDatabase() {
       }
       const data = await response.json();
       const jikanAnime: JikanAnimeResponse[] = data.data;
-      if (jikanAnime && jikanAnime.length > 0) {
-        for (const anime of jikanAnime) {
+      // Filtrar solo series (type === 'TV'), score > 5, al menos 2 episodios, y status válido
+      const filteredAnime = jikanAnime.filter(
+        (anime) =>
+          anime.type === 'TV' &&
+          (anime.score ?? 0) > 5 &&
+          (anime.episodes ?? 0) > 1 &&
+          ['Currently Airing', 'Finished Airing', 'Not yet aired'].includes(anime.status)
+      );
+      if (filteredAnime.length > 0) {
+        for (const anime of filteredAnime) {
           allJikanData.push(anime);
           const transformedAnime = transformJikanToSupabase(anime);
           allAnimeData.push(transformedAnime);
@@ -188,16 +167,18 @@ async function seedDatabase() {
           allGenresData.push(...genres);
         }
         console.log(
-          `📦 Página ${page} descargada: ${jikanAnime.length} animes (Total acumulado: ${allAnimeData.length})`
+          `📦 Página ${page} descargada: ${filteredAnime.length} series (Total acumulado: ${allAnimeData.length})`
         );
-        hasNext = data.pagination?.has_next_page;
-        page++;
-        if (hasNext) {
-          console.log('⏳ Waiting 1 second (rate limiting)...');
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
       } else {
-        hasNext = false;
+        console.log(
+          `📦 Página ${page} descargada: 0 series (Total acumulado: ${allAnimeData.length})`
+        );
+      }
+      hasNext = data.pagination?.has_next_page;
+      page++;
+      if (hasNext) {
+        console.log('⏳ Waiting 1 second (rate limiting)...');
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
     console.log(`✅ Total animes fetched: ${allAnimeData.length}`);
@@ -212,7 +193,37 @@ async function seedDatabase() {
     // 2. Insert anime
     const insertedAnime = await insertAnime(allAnimeData);
 
-    // 3. Create covers with anime IDs
+    // 3. Relacionar anime y géneros en anime_genres
+    const animeGenresData = [];
+    for (let i = 0; i < insertedAnime.length; i++) {
+      const animeId = insertedAnime[i].id;
+      const malId = insertedAnime[i].mal_id;
+      // Buscar el Jikan original
+      const originalJikan = allJikanData.find((a) => a.mal_id === malId);
+      if (originalJikan) {
+        // Obtener géneros únicos de este anime
+        const genres = transformJikanGenres(originalJikan);
+        for (const genre of genres) {
+          const genreId = genreMap.get(genre.name);
+          if (genreId) {
+            animeGenresData.push({ anime_id: animeId, genre_id: genreId });
+          }
+        }
+      }
+    }
+    if (animeGenresData.length > 0) {
+      console.log(`\n🔗 Relacionando ${animeGenresData.length} anime_genres...`);
+      const { error: agError } = await supabase
+        .from('anime_genres')
+        .upsert(animeGenresData, { onConflict: 'anime_id,genre_id' });
+      if (agError) {
+        console.error('❌ Error insertando anime_genres:', agError);
+      } else {
+        console.log('✅ Relaciones anime_genres insertadas correctamente');
+      }
+    }
+
+    // 4. Create covers with anime IDs
     const allCoversData = [];
     for (let i = 0; i < insertedAnime.length; i++) {
       const animeId = insertedAnime[i].id;
@@ -227,13 +238,14 @@ async function seedDatabase() {
       }
     }
 
-    // 4. Insert covers
+    // 5. Insert covers
     await insertCovers(allCoversData);
 
     console.log('\n🎉 Database seeding completed successfully!');
     console.log(`📊 Summary:`);
     console.log(`   - ${insertedAnime.length} anime inserted`);
     console.log(`   - ${genreMap.size} genres inserted`);
+    console.log(`   - ${animeGenresData.length} anime_genres inserted`);
     console.log(`   - ${allCoversData.length} covers inserted`);
   } catch (error) {
     console.error('💥 Seeding failed:', error);
@@ -242,4 +254,4 @@ async function seedDatabase() {
 }
 
 // Run the seeder
-seedDatabase();
+await seedDatabase();

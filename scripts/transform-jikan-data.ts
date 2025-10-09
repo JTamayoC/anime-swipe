@@ -99,11 +99,11 @@ export function transformJikanToSupabase(jikanAnime: JikanAnimeResponse) {
     duration: transformDuration(jikanAnime.duration),
     year: jikanAnime.year,
     score: jikanAnime.score ? Math.round(jikanAnime.score * 100) / 100 : null,
-    scored_by: jikanAnime.scored_by || 0,
+    scored_by: jikanAnime.scored_by ?? 0,
     rank: jikanAnime.rank,
     popularity: jikanAnime.popularity,
     members: jikanAnime.members,
-    favorites: jikanAnime.favorites || 0,
+    favorites: jikanAnime.favorites ?? 0,
 
     // Dates
     aired_from: transformDate(jikanAnime.aired.from),
@@ -130,7 +130,7 @@ export function transformJikanToSupabase(jikanAnime: JikanAnimeResponse) {
       : null,
 
     // Media and URLs
-    trailer: jikanAnime.trailer?.embed_url || jikanAnime.trailer?.url || null,
+    trailer: jikanAnime.trailer?.embed_url ?? jikanAnime.trailer?.url ?? null,
     mal_url: jikanAnime.url,
 
     // Status flags
