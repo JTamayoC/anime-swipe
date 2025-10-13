@@ -2,10 +2,12 @@
 
 import { Heart, X, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
+import { redirect } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 
 import type { AnimeWithCovers } from '@/types/anime';
 import { fakeAnimeData, DEFAULT_PLACEHOLDER_IMAGE } from '@/utils/constants';
+import { createClient } from '@/utils/supabase/client';
 
 export default function AnimeSwipeApp() {
   const [animeList, setAnimeList] = useState<AnimeWithCovers[]>([]);
@@ -18,12 +20,20 @@ export default function AnimeSwipeApp() {
   const [dislikedAnime, setDislikedAnime] = useState<AnimeWithCovers[]>([]);
 
   useEffect(() => {
-    setAnimeList(fakeAnimeData);
-    setLoading(false);
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) {
+        redirect('/login');
+      }
+      setAnimeList(fakeAnimeData);
+      setLoading(false);
+    };
+    void checkAuth();
   }, []);
 
   const currentAnime = animeList[currentIndex];
-  const primaryCover = currentAnime?.covers?.find((c) => c.is_primary) || currentAnime?.covers?.[0];
+  const primaryCover = currentAnime?.covers?.find((c) => c.is_primary) ?? currentAnime?.covers?.[0];
 
   const handleSwipe = (direction: 'left' | 'right') => {
     if (!currentAnime) return;
@@ -133,8 +143,8 @@ export default function AnimeSwipeApp() {
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
             <div className="relative h-96 w-full">
               <Image
-                src={primaryCover?.url || DEFAULT_PLACEHOLDER_IMAGE}
-                alt={currentAnime.title_english || currentAnime.title}
+                src={primaryCover?.url ?? DEFAULT_PLACEHOLDER_IMAGE}
+                alt={currentAnime.title_english ?? currentAnime.title}
                 fill
                 className="object-cover z-0"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -143,17 +153,17 @@ export default function AnimeSwipeApp() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10" />
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-20">
                 <h2 className="text-2xl font-bold mb-3">
-                  {currentAnime.title_english || currentAnime.title}
+                  {currentAnime.title_english ?? currentAnime.title}
                 </h2>
                 <div className="flex gap-2 mb-2 flex-wrap">
                   <span className="bg-yellow-500 text-black px-3 py-1.5 rounded text-xs font-bold">
-                    ⭐ {currentAnime.score || 'N/A'}
+                    ⭐ {currentAnime.score ?? 'N/A'}
                   </span>
                   <span className="bg-purple-500 px-3 py-1.5 rounded text-xs">
                     {currentAnime.type}
                   </span>
                   <span className="bg-blue-500 px-3 py-1.5 rounded text-xs">
-                    {currentAnime.episodes || '?'} eps
+                    {currentAnime.episodes ?? '?'} eps
                   </span>
                 </div>
               </div>
