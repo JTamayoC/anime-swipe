@@ -1,5 +1,6 @@
 // @ts-nocheck
 // ESLint Flat Config - Next.js 15 + React 19 + TypeScript
+import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
@@ -10,7 +11,20 @@ import pluginReact from 'eslint-plugin-react';
 import pluginReactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
+const compat = new FlatCompat({
+  baseDirectory: import.meta.dirname,
+  recommendedConfig: js.configs.recommended,
+});
 const config = [];
+
+// ============================================================================
+// NEXT.JS PLUGIN - Next.js specific rules (FlatCompat)
+// ============================================================================
+config.push(
+  ...compat.config({
+    extends: ['eslint:recommended', 'next'],
+  })
+);
 
 // ============================================================================
 // BASE CONFIGURATION
