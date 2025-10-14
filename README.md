@@ -45,7 +45,7 @@ supabase/
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-publishable-key
+NEXT_PUBLIC_SUPABASE_KEY=your-publishable-key
 ```
 
 Ver **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** para ejemplos de uso.

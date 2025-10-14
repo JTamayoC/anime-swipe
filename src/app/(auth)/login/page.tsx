@@ -1,6 +1,6 @@
 import { AuthButton } from '@/app/components/auth-button';
 
-import { login, signInWithGoogle } from './actions';
+import { login } from './actions';
 
 export default function LoginPage() {
   return (
@@ -72,7 +72,7 @@ export default function LoginPage() {
           </div>
 
           {/* Inicio de Sesión con Google */}
-          <form action={signInWithGoogle} className="mt-6">
+          <form className="mt-6">
             <AuthButton />{' '}
             {/* Asume que AuthButton usa un estilo similar a los botones de arriba */}
           </form>

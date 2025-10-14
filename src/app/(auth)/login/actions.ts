@@ -44,19 +44,3 @@ export async function signup(formData: FormData) {
   revalidatePath('/', 'layout');
   redirect('/');
 }
-
-export async function signInWithGoogle() {
-  const supabase = await createClient();
-  const { error, data: _data } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: process.env.NEXT_PUBLIC_SITE_URL
-        ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
-        : undefined,
-    },
-  });
-  if (error) {
-    redirect('/error');
-  }
-  // The redirect will be handled by Supabase, so no further action is needed here.
-}

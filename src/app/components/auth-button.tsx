@@ -9,7 +9,7 @@ import { GoogleIcon } from './icons';
 import type { Session } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
 const callbackUrl = process.env.NEXT_PUBLIC_AUTH_CALLBACK_URL;
 
 if (!supabaseUrl) {

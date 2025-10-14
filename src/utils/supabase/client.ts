@@ -1,7 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
 
 if (!supabaseUrl) {
   throw new Error(
@@ -10,7 +10,7 @@ if (!supabaseUrl) {
 }
 if (!supabaseKey) {
   throw new Error(
-    'Environment variable NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY is not defined. Please set it in your environment.'
+    'Environment variable NEXT_PUBLIC_SUPABASE_KEY is not defined. Please set it in your environment.'
   );
 }
 

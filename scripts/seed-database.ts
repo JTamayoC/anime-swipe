@@ -16,9 +16,9 @@ import {
 import type { JikanAnimeResponse } from '../src/types/jikan';
 
 // Supabase setup - use secret key for admin operations, fallback to public key
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
-const supabasePublicKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY!;
+const supabasePublicKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!;
 
 const supabaseKey = supabaseSecretKey ?? supabasePublicKey;
 
@@ -26,9 +26,7 @@ if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Missing Supabase environment variables');
   console.error('Please check your .env file contains:');
   console.error('- NEXT_PUBLIC_SUPABASE_URL');
-  console.error(
-    '- SUPABASE_SECRET_KEY (for seeding) or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY'
-  );
+  console.error('- SUPABASE_SECRET_KEY (for seeding) or NEXT_PUBLIC_SUPABASE_KEY');
   process.exit(1);
 }
 
