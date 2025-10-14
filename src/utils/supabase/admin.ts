@@ -1,4 +1,5 @@
-import { createBrowserClient } from '@supabase/ssr';
+'server-only';
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
@@ -14,4 +15,4 @@ if (!supabaseKey) {
   );
 }
 
-export const createClient = () => createBrowserClient(supabaseUrl, supabaseKey);
+export const getSupabaseAdmin = () => createClient(supabaseUrl, supabaseKey);
