@@ -1,11 +1,12 @@
+/* eslint no-console: 0 */
 /**
  * Seed Supabase database with anime data from Jikan API
  *
  * Usage: npm run seed
  */
 
-import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 
 import {
   transformJikanToSupabase,
@@ -14,6 +15,8 @@ import {
 } from './transform-jikan-data';
 
 import type { JikanAnimeResponse } from '../src/types/jikan';
+
+dotenv.config({ path: '.env.local' });
 
 // Supabase setup - use secret key for admin operations, fallback to public key
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -74,24 +77,29 @@ async function insertGenres(
  * Insert or update anime data (upsert based on mal_id)
  */
 async function insertAnime(animeData: ReturnType<typeof transformJikanToSupabase>[]) {
-  console.log(`📥 Upserting ${animeData.length} anime...`);
-
-  const { data, error } = await supabase
-    .from('anime')
-    .upsert(animeData, {
-      onConflict: 'mal_id',
-      ignoreDuplicates: false,
-    })
-    .select('id, mal_id');
-
-  if (error) {
-    console.error('❌ Failed to upsert anime:', error);
-    console.error('Error details:', error);
-    return [];
+  const BATCH_SIZE = 500;
+  console.log(`📥 Upserting ${animeData.length} anime in batches of ${BATCH_SIZE}...`);
+  let allData = [];
+  for (let i = 0; i < animeData.length; i += BATCH_SIZE) {
+    const batch = animeData.slice(i, i + BATCH_SIZE);
+    const { data, error } = await supabase
+      .from('anime')
+      .upsert(batch, {
+        onConflict: 'mal_id',
+        ignoreDuplicates: false,
+      })
+      .select('id, mal_id');
+    if (error) {
+      console.error(`❌ Failed to upsert anime batch ${Math.floor(i / BATCH_SIZE) + 1}:`, error);
+      continue;
+    }
+    if (data) {
+      allData.push(...data);
+      console.log(`✅ Upserted batch ${Math.floor(i / BATCH_SIZE) + 1}: ${data.length} anime`);
+    }
   }
-
-  console.log(`✅ Upserted ${data.length} anime successfully`);
-  return data;
+  console.log(`✅ Upserted total ${allData.length} anime successfully`);
+  return allData;
 }
 
 /**
@@ -100,29 +108,131 @@ async function insertAnime(animeData: ReturnType<typeof transformJikanToSupabase
 async function insertCovers(coversData: ReturnType<typeof transformJikanCovers>) {
   if (coversData.length === 0) return;
 
-  console.log(`📥 Inserting ${coversData.length} covers...`);
+  // Filtrar covers con url demasiado larga (por ejemplo, > 255 caracteres)
+  const MAX_URL_LENGTH = 255;
+  const filteredCovers = coversData.filter(
+    (cover) => !cover.url || cover.url.length <= MAX_URL_LENGTH
+  );
+  const removed = coversData.length - filteredCovers.length;
+  if (removed > 0) {
+    console.warn(
+      `⚠️  ${removed} covers removidos por url demasiado larga (> ${MAX_URL_LENGTH} caracteres)`
+    );
+  }
+
+  console.log(`📥 Inserting ${filteredCovers.length} covers...`);
 
   // First, delete existing covers for these anime to avoid duplicates
-  const animeIds = Array.from(new Set(coversData.map((cover) => cover.anime_id)));
+  const animeIds = Array.from(new Set(filteredCovers.map((cover) => cover.anime_id)));
 
   if (animeIds.length > 0) {
     console.log(`🗑️  Cleaning existing covers for ${animeIds.length} anime...`);
-    const { error: deleteError } = await supabase.from('covers').delete().in('anime_id', animeIds);
-
-    if (deleteError) {
-      console.error('⚠️  Warning: Failed to clean existing covers:', deleteError);
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < animeIds.length; i += BATCH_SIZE) {
+      const batch = animeIds.slice(i, i + BATCH_SIZE);
+      const { error: deleteError } = await supabase.from('covers').delete().in('anime_id', batch);
+      if (deleteError) {
+        console.error(
+          `⚠️  Warning: Failed to clean covers for batch ${i / BATCH_SIZE + 1}:`,
+          deleteError
+        );
+      }
     }
   }
 
-  // Insert new covers
-  const { error } = await supabase.from('covers').insert(coversData);
-
-  if (error) {
-    console.error('❌ Failed to insert covers:', error);
-    return;
+  // Insert new covers en batches
+  const BATCH_SIZE = 500;
+  let totalInserted = 0;
+  for (let i = 0; i < filteredCovers.length; i += BATCH_SIZE) {
+    const batch = filteredCovers.slice(i, i + BATCH_SIZE);
+    const { error } = await supabase.from('covers').insert(batch);
+    if (error) {
+      console.error(`❌ Failed to insert covers batch ${Math.floor(i / BATCH_SIZE) + 1}:`, error);
+    } else {
+      totalInserted += batch.length;
+      console.log(`✅ Inserted covers batch ${Math.floor(i / BATCH_SIZE) + 1}: ${batch.length}`);
+    }
   }
+  console.log(`✅ Inserted total ${totalInserted} covers successfully`);
+}
 
-  console.log(`✅ Inserted covers successfully`);
+async function insertExternalReviews(animeList: Array<{ id: string; mal_id: number }>) {
+  const BATCH_SIZE = 500;
+  let processed = 0;
+  let errors = 0;
+  let totalInserted = 0;
+  let reviewsData = [];
+  for (const anime of animeList) {
+    processed++;
+    if (processed % BATCH_SIZE === 0) {
+      console.log(`...Procesados ${processed} animes para external_reviews`);
+    }
+    let res;
+    let retried = false;
+    try {
+      res = await fetch(`https://api.jikan.moe/v4/anime/${anime.mal_id}`);
+      if (res.status === 429 && !retried) {
+        errors++;
+        console.warn(
+          `Rate limit 429 para anime ${anime.mal_id}, esperando 1 segundo y reintentando...`
+        );
+        await new Promise((r) => setTimeout(r, 1000));
+        res = await fetch(`https://api.jikan.moe/v4/anime/${anime.mal_id}`);
+        retried = true;
+      }
+      if (!res.ok) {
+        errors++;
+        console.error(`Error HTTP al obtener anime ${anime.mal_id}: ${res.status}`);
+        continue;
+      }
+      const json = await res.json();
+      const data = json.data;
+      reviewsData.push({
+        anime_id: anime.id,
+        source: 'MAL',
+        external_id: String(anime.mal_id),
+        score: data.score,
+        review_count: data.scored_by,
+        url: data.url,
+      });
+      await new Promise((r) => setTimeout(r, 300));
+    } catch (e) {
+      errors++;
+      console.error(`Error fetch anime ${anime.mal_id}:`, e);
+    }
+    // Guardado parcial por batch size
+    if (reviewsData.length >= BATCH_SIZE) {
+      console.log(
+        `💾 Guardando batch de ${reviewsData.length} external_reviews (parcial, procesados: ${processed})...`
+      );
+      const { error } = await supabase
+        .from('external_reviews')
+        .upsert(reviewsData, { onConflict: 'anime_id,source,external_id' });
+      if (error) {
+        console.error('❌ Error inserting external_reviews (parcial):', error);
+      } else {
+        totalInserted += reviewsData.length;
+        console.log(`✅ Insertados ${reviewsData.length} external_reviews (parcial)`);
+      }
+      reviewsData = [];
+    }
+  }
+  // Guardar lo que quede al final
+  if (reviewsData.length > 0) {
+    console.log(`💾 Guardando batch final de ${reviewsData.length} external_reviews...`);
+    const { error } = await supabase
+      .from('external_reviews')
+      .upsert(reviewsData, { onConflict: 'anime_id,source,external_id' });
+    if (error) {
+      console.error('❌ Error inserting external_reviews (final):', error);
+    } else {
+      totalInserted += reviewsData.length;
+      console.log(`✅ Insertados ${reviewsData.length} external_reviews (final)`);
+    }
+  }
+  console.log(
+    `🔎 External reviews: procesados ${processed} animes, errores: ${errors}, total insertados: ${totalInserted}`
+  );
 }
 
 /**
@@ -226,10 +336,8 @@ async function seedDatabase() {
     for (let i = 0; i < insertedAnime.length; i++) {
       const animeId = insertedAnime[i].id;
       const malId = insertedAnime[i].mal_id;
-
       // Find original jikan data by mal_id (using stored data, no re-fetch)
       const originalJikan = allJikanData.find((a) => a.mal_id === malId);
-
       if (originalJikan) {
         const covers = transformJikanCovers(originalJikan, animeId);
         allCoversData.push(...covers);
@@ -239,12 +347,17 @@ async function seedDatabase() {
     // 5. Insert covers
     await insertCovers(allCoversData);
 
+    // 6. Poblar external_reviews
+    const animeList = insertedAnime.map((a) => ({ id: a.id, mal_id: a.mal_id }));
+    await insertExternalReviews(animeList);
+
     console.log('\n🎉 Database seeding completed successfully!');
     console.log(`📊 Summary:`);
     console.log(`   - ${insertedAnime.length} anime inserted`);
     console.log(`   - ${genreMap.size} genres inserted`);
     console.log(`   - ${animeGenresData.length} anime_genres inserted`);
     console.log(`   - ${allCoversData.length} covers inserted`);
+    process.exit(0);
   } catch (error) {
     console.error('💥 Seeding failed:', error);
     process.exit(1);

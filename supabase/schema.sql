@@ -16,7 +16,7 @@ CREATE TYPE anime_season AS ENUM ('Winter', 'Spring', 'Summer', 'Fall');
 CREATE TYPE swipe_direction AS ENUM ('left', 'right', 'skip');
 CREATE TYPE watch_status AS ENUM ('Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch');
 CREATE TYPE external_source AS ENUM ('MAL', 'AniList', 'AniDB', 'Kitsu', 'TMDB');
-CREATE TYPE cover_size AS ENUM ('small', 'medium', 'large', 'original');
+CREATE TYPE cover_size AS ENUM ('small', 'medium', 'large');
 
 -- ============================================
 -- TABLES
@@ -97,26 +97,26 @@ CREATE TABLE public.covers (
   anime_id UUID NOT NULL REFERENCES public.anime(id) ON DELETE CASCADE,
   url TEXT NOT NULL,
   size cover_size NOT NULL DEFAULT 'medium',
-  width INTEGER CHECK (width >= 0),
-  height INTEGER CHECK (height >= 0),
   is_primary BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- External Reviews table
+-- External Reviews table (multi-source, multi-review)
 CREATE TABLE public.external_reviews (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   anime_id UUID NOT NULL REFERENCES public.anime(id) ON DELETE CASCADE,
   source external_source NOT NULL,
-  external_id TEXT NOT NULL,
+  external_id TEXT NOT NULL, -- ID de la review en la fuente externa
+  author TEXT,              -- Autor de la review externa
   score NUMERIC(5,2) CHECK (score >= 0 AND score <= 100),
-  review_count INTEGER CHECK (review_count >= 0),
+  review_text TEXT,         -- Texto de la review
+  published_at TIMESTAMPTZ, -- Fecha de publicación de la review
   url TEXT,
   last_synced TIMESTAMPTZ DEFAULT NOW(),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(anime_id, source)
+  UNIQUE(anime_id, source, external_id) -- Permite múltiples reviews por fuente
 );
 
 -- User Reviews table
@@ -133,16 +133,6 @@ CREATE TABLE public.user_reviews (
   UNIQUE(user_id, anime_id)
 );
 
--- Swipes table
-CREATE TABLE public.swipes (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  anime_id UUID NOT NULL REFERENCES public.anime(id) ON DELETE CASCADE,
-  direction swipe_direction NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, anime_id)
-);
 
 -- User Lists table (watchlist, favorites, etc)
 CREATE TABLE public.user_lists (
@@ -152,6 +142,7 @@ CREATE TABLE public.user_lists (
   status watch_status NOT NULL DEFAULT 'Plan to Watch',
   episodes_watched INTEGER DEFAULT 0 CHECK (episodes_watched >= 0),
   is_favorite BOOLEAN DEFAULT FALSE,
+  interested BOOLEAN,
   notes TEXT CHECK (char_length(notes) <= 1000),
   started_at TIMESTAMPTZ,
   completed_at TIMESTAMPTZ,
@@ -193,8 +184,6 @@ CREATE INDEX idx_user_reviews_anime_id ON public.user_reviews(anime_id);
 CREATE INDEX idx_user_reviews_rating ON public.user_reviews(rating);
 CREATE INDEX idx_user_reviews_helpful_count ON public.user_reviews(helpful_count);
 
-CREATE INDEX idx_swipes_user_id_direction ON public.swipes(user_id, direction);
-CREATE INDEX idx_swipes_anime_id ON public.swipes(anime_id);
 
 CREATE INDEX idx_user_lists_user_id_status ON public.user_lists(user_id, status);
 CREATE INDEX idx_user_lists_user_id_favorite ON public.user_lists(user_id, is_favorite);
@@ -230,8 +219,6 @@ CREATE TRIGGER update_external_reviews_updated_at BEFORE UPDATE ON public.extern
 CREATE TRIGGER update_user_reviews_updated_at BEFORE UPDATE ON public.user_reviews
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_swipes_updated_at BEFORE UPDATE ON public.swipes
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_user_lists_updated_at BEFORE UPDATE ON public.user_lists
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -248,15 +235,14 @@ ALTER TABLE public.anime_genres ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.covers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.external_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_reviews ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.swipes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_lists ENABLE ROW LEVEL SECURITY;
 
 -- Users policies
 CREATE POLICY "Users can view their own profile" ON public.users
-  FOR SELECT USING (auth.uid() = id);
+  FOR SELECT USING ((SELECT auth.uid()) = id);
 
 CREATE POLICY "Users can update their own profile" ON public.users
-  FOR UPDATE USING (auth.uid() = id);
+  FOR UPDATE USING ((SELECT auth.uid()) = id);
 
 -- Anime policies (public read, admin write)
 CREATE POLICY "Anyone can view anime" ON public.anime
@@ -283,39 +269,27 @@ CREATE POLICY "Anyone can view user reviews" ON public.user_reviews
   FOR SELECT USING (true);
 
 CREATE POLICY "Users can create their own reviews" ON public.user_reviews
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT WITH CHECK ((SELECT auth.uid()) = id);
 
 CREATE POLICY "Users can update their own reviews" ON public.user_reviews
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING ((SELECT auth.uid()) = id);
 
 CREATE POLICY "Users can delete their own reviews" ON public.user_reviews
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE USING ((SELECT auth.uid()) = id);
 
--- Swipes policies
-CREATE POLICY "Users can view their own swipes" ON public.swipes
-  FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create their own swipes" ON public.swipes
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own swipes" ON public.swipes
-  FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own swipes" ON public.swipes
-  FOR DELETE USING (auth.uid() = user_id);
 
 -- User Lists policies
 CREATE POLICY "Users can view their own lists" ON public.user_lists
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING ((SELECT auth.uid()) = user_id);
 
 CREATE POLICY "Users can create their own list entries" ON public.user_lists
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT WITH CHECK ((SELECT auth.uid()) = id);
 
 CREATE POLICY "Users can update their own list entries" ON public.user_lists
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING ((SELECT auth.uid()) = id);
 
 CREATE POLICY "Users can delete their own list entries" ON public.user_lists
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE USING ((SELECT auth.uid()) = id);
 
 -- ============================================
 -- FUNCTIONS
