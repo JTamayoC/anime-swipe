@@ -193,13 +193,17 @@ CREATE INDEX idx_user_lists_anime_id ON public.user_lists(anime_id);
 -- TRIGGERS FOR UPDATED_AT
 -- ============================================
 
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_catalog
+AS $$
 BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -269,13 +273,13 @@ CREATE POLICY "Anyone can view user reviews" ON public.user_reviews
   FOR SELECT USING (true);
 
 CREATE POLICY "Users can create their own reviews" ON public.user_reviews
-  FOR INSERT WITH CHECK ((SELECT auth.uid()) = id);
+  FOR INSERT WITH CHECK ((SELECT auth.uid()) = user_id);
 
 CREATE POLICY "Users can update their own reviews" ON public.user_reviews
-  FOR UPDATE USING ((SELECT auth.uid()) = id);
+  FOR UPDATE USING ((SELECT auth.uid()) = user_id);
 
 CREATE POLICY "Users can delete their own reviews" ON public.user_reviews
-  FOR DELETE USING ((SELECT auth.uid()) = id);
+  FOR DELETE USING ((SELECT auth.uid()) = user_id);
 
 
 -- User Lists policies
@@ -283,13 +287,13 @@ CREATE POLICY "Users can view their own lists" ON public.user_lists
   FOR SELECT USING ((SELECT auth.uid()) = user_id);
 
 CREATE POLICY "Users can create their own list entries" ON public.user_lists
-  FOR INSERT WITH CHECK ((SELECT auth.uid()) = id);
+  FOR INSERT WITH CHECK ((SELECT auth.uid()) = user_id);
 
 CREATE POLICY "Users can update their own list entries" ON public.user_lists
-  FOR UPDATE USING ((SELECT auth.uid()) = id);
+  FOR UPDATE USING ((SELECT auth.uid()) = user_id);
 
 CREATE POLICY "Users can delete their own list entries" ON public.user_lists
-  FOR DELETE USING ((SELECT auth.uid()) = id);
+  FOR DELETE USING ((SELECT auth.uid()) = user_id);
 
 -- ============================================
 -- FUNCTIONS
@@ -297,7 +301,11 @@ CREATE POLICY "Users can delete their own list entries" ON public.user_lists
 
 -- Function to handle new user creation
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_catalog
+AS $$
 BEGIN
   INSERT INTO public.users (id, email, username)
   VALUES (
@@ -307,38 +315,47 @@ BEGIN
   );
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Trigger to create user profile on signup
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+$$;
 
 -- Function to update anime score based on user reviews (INSERT/UPDATE)
 CREATE OR REPLACE FUNCTION public.update_anime_score_insert_update()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = public, pg_catalog
+AS $$
 BEGIN
   UPDATE public.anime
   SET
-    score = (SELECT AVG(rating) FROM public.user_reviews WHERE anime_id = NEW.anime_id),
-    scored_by = (SELECT COUNT(*) FROM public.user_reviews WHERE anime_id = NEW.anime_id)
+    score = (
+      SELECT AVG(rating) FROM public.user_reviews WHERE anime_id = NEW.anime_id
+    ),
+    scored_by = (
+      SELECT COUNT(*) FROM public.user_reviews WHERE anime_id = NEW.anime_id
+    )
   WHERE id = NEW.anime_id;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Function to update anime score based on user reviews (DELETE)
 CREATE OR REPLACE FUNCTION public.update_anime_score_delete()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = public, pg_catalog
+AS $$
 BEGIN
   UPDATE public.anime
   SET
-    score = (SELECT AVG(rating) FROM public.user_reviews WHERE anime_id = OLD.anime_id),
-    scored_by = (SELECT COUNT(*) FROM public.user_reviews WHERE anime_id = OLD.anime_id)
+    score = (
+      SELECT AVG(rating) FROM public.user_reviews WHERE anime_id = OLD.anime_id
+    ),
+    scored_by = (
+      SELECT COUNT(*) FROM public.user_reviews WHERE anime_id = OLD.anime_id
+    )
   WHERE id = OLD.anime_id;
   RETURN OLD;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Triggers to update anime score when review is added/updated/deleted
 CREATE TRIGGER update_anime_score_on_review_insert
