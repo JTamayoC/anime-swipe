@@ -1442,7 +1442,7 @@ export default function PreferencesPage() {
 
               {/* Disliked Anime */}
               <div className="bg-white/10 backdrop-blur rounded-lg p-6">
-                <h3 className="text-xl font-bold">No me interesa � ({dislikedAnime.length})</h3>
+                <h3 className="text-xl font-bold">No me interesa 🚫 ({dislikedAnime.length})</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {dislikedAnime.map((anime) => (
                     <div key={anime.id} className="bg-white rounded-lg overflow-hidden shadow-lg">
@@ -1492,7 +1492,7 @@ export default function PreferencesPage() {
                                   onClick={() => void changeAnimeStatus(anime.id, 'interested')}
                                   className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
                                 >
-                                  � Por Ver
+                                  📋 Por Ver
                                 </button>
                                 <button
                                   onClick={() => void changeAnimeStatus(anime.id, 'remove')}
