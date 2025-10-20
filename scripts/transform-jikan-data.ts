@@ -118,6 +118,11 @@ export function transformJikanToSupabase(jikanAnime: JikanAnimeResponse) {
     studios: jikanAnime.studios?.map((studio) => studio.name) || null,
     producers: jikanAnime.producers?.map((producer) => producer.name) || null,
     licensors: jikanAnime.licensors?.map((licensor) => licensor.name) || null,
+    streaming:
+      jikanAnime.streaming?.map((stream) => ({
+        name: stream.name,
+        url: stream.url,
+      })) || null,
 
     // Broadcast information
     broadcast: jikanAnime.broadcast

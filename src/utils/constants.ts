@@ -42,6 +42,7 @@ export const fakeAnimeData: AnimeWithCovers[] = [
     studios: ['Studio Bones'],
     producers: ['Aniplex'],
     licensors: ['Funimation'],
+    streaming: null,
     broadcast: {
       day: 'Saturday',
       time: '23:00',
@@ -98,6 +99,7 @@ export const fakeAnimeData: AnimeWithCovers[] = [
     studios: ['Trigger', 'MAPPA'],
     producers: ['Netflix'],
     licensors: ['Netflix'],
+    streaming: null,
     broadcast: {
       day: 'Friday',
       time: '00:00',
@@ -154,6 +156,7 @@ export const fakeAnimeData: AnimeWithCovers[] = [
     studios: ['A-1 Pictures'],
     producers: ['Aniplex', 'Crunchyroll'],
     licensors: ['Crunchyroll'],
+    streaming: null,
     broadcast: {
       day: 'Sunday',
       time: '22:30',

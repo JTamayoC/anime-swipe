@@ -263,7 +263,6 @@ async function seedDatabase() {
         (anime) =>
           anime.type === 'TV' &&
           (anime.score ?? 0) > 5 &&
-          (anime.episodes ?? 0) > 1 &&
           ['Currently Airing', 'Finished Airing', 'Not yet aired'].includes(anime.status)
       );
       if (filteredAnime.length > 0) {

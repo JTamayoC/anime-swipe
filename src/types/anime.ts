@@ -6,6 +6,8 @@
 export type AnimeType = 'TV' | 'Movie' | 'OVA' | 'ONA' | 'Special' | 'Music';
 export type AnimeStatus = 'Airing' | 'Finished' | 'Not yet aired';
 export type AnimeSeason = 'Winter' | 'Spring' | 'Summer' | 'Fall';
+export type WatchStatus = 'Watching' | 'Completed' | 'On-Hold' | 'Dropped' | 'Plan to Watch';
+export type PreferenceStatus = 'Interested' | 'Not Interested' | 'Liked' | 'Disliked';
 
 export interface Anime {
   id: string;
@@ -35,6 +37,12 @@ export interface Anime {
   studios: string[] | null; // JSONB in database
   producers: string[] | null; // JSONB in database
   licensors: string[] | null; // JSONB in database
+  streaming:
+    | {
+        name: string;
+        url: string;
+      }[]
+    | null; // JSONB in database
   broadcast: {
     day: string | null;
     time: string | null;
@@ -75,4 +83,38 @@ export interface Genre {
 
 export interface AnimeWithGenres extends AnimeWithCovers {
   genres?: Genre[];
+}
+
+export interface UserList {
+  id: string;
+  user_id: string;
+  anime_id: string;
+  status: WatchStatus;
+  preference: PreferenceStatus;
+  is_favorite: boolean;
+  notes: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RecommendationAnime {
+  id: string;
+  title: string;
+  title_english: string | null;
+  title_japanese: string | null;
+  type: AnimeType;
+  episodes: number | null;
+  score: number | null;
+  synopsis: string | null;
+  year: number | null;
+  status: AnimeStatus;
+  covers?: AnimeCover[];
+  anime_genres?: {
+    id: string;
+    anime_id: string;
+    genre_id: string;
+    genres: Genre;
+  }[];
 }

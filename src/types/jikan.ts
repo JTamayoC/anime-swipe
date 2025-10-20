@@ -69,6 +69,11 @@ export interface JikanGenre {
   url: string;
 }
 
+export interface JikanStreaming {
+  name: string;
+  url: string;
+}
+
 export interface JikanAnimeResponse {
   mal_id: number;
   url: string;
@@ -106,6 +111,7 @@ export interface JikanAnimeResponse {
   explicit_genres: JikanGenre[];
   themes: JikanGenre[];
   demographics: JikanGenre[];
+  streaming: JikanStreaming[];
 }
 
 export interface JikanPaginatedResponse<T> {
